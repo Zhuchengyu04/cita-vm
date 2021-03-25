@@ -29,9 +29,9 @@ use accumulators::group::RSAGroup;
 use accumulators::traits::{BatchedAccumulator, StaticAccumulator, StaticVectorCommitment};
 use accumulators::Accumulator;
 use accumulators::vc::binary;
-use accumulators::num_bigint::RandPrime;
-use accumulators::rand::{Rng, SeedableRng};
-use accumulators::rand_chacha::ChaChaRng;
+use num_bigint::RandPrime;
+use rand::{Rng, SeedableRng};
+use rand_chacha::ChaChaRng;
 
 const PREFIX_LEN: usize = 12;
 const LATEST_ERA_KEY: [u8; PREFIX_LEN] = [b'l', b'a', b's', b't', 0, 0, 0, 0, 0, 0, 0, 0];
