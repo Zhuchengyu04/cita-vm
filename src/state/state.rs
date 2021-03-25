@@ -11,13 +11,7 @@ use rayon::prelude::{IntoParallelRefMutIterator, ParallelIterator};
 //use std::str::FromStr;
 
 extern crate accumulators;
-#[cfg(feature = "classgroup")]
-extern crate classgroup;
-extern crate num_bigint;
-extern crate num_integer;
-extern crate num_traits;
-extern crate rand;
-extern crate rand_chacha;
+
 use crate::common;
 use crate::common::hash;
 use crate::state::account::StateObject;
