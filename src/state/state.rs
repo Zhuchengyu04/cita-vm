@@ -844,4 +844,34 @@ mod tests {
 
         assert_eq!(proof1, proof2);
     }
+
+    #[test]
+    fn generate_vc() {
+        let lambda = 128;
+        let n = 1024;
+        let mut rng = ChaChaRng::from_seed([0u8; 32]);
+
+        let ph = Rc::new(PrimeHash::init(64));
+
+        let config = Config { lambda, n,  ph };
+        let mut vc = BinaryVectorCommitment::<Accumulator>::setup::<RSAGroup, _>(&mut rng, &config);
+
+        let mut val: Vec<bool> = (0..64).map(|_| rng.gen()).collect();
+        // set two bits manually, to make checks easier
+        val[2] = true;
+        val[3] = false;
+
+        vc.commit(&val);
+
+        // open a set bit
+        let comm = vc.open(&true, 2);
+        assert!(vc.verify(&true, 2, &comm), "invalid commitment (bit set)");
+
+        // open a set bit
+        let comm = vc.open(&false, 3);
+        assert!(
+            vc.verify(&false, 3, &comm),
+            "invalid commitment (bit not set)"
+        );
+    }
 }
