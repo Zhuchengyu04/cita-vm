@@ -10,13 +10,11 @@ documentation = "https://github.com/cryptape/cita-vm/blob/master/README.md"
 
 [dependencies]
 byteorder = "1.0"
-bytes = "0.4"
 cita_trie = "2.0"
-ckb-vm =  { git = "https://github.com/nervosnetwork/ckb-vm", features=["asm"] }
 env_logger = "0.6"
 ethereum-types = "0.4"
 hashbrown = { version = "0.3", features = ["rayon"] }
-hasher = { version="0.1", features = ["hash-keccak"] }
+hasher = { version="0.1" }
 hex = "0.3"
 libsecp256k1 = "0.2"
 log = "0.4"
@@ -36,3 +34,9 @@ bencher = "0.1"
 [[bench]]
 name = "benchmark"
 harness = false
+
+[features]
+default = ["sha3hash"]
+sha3hash = ["hasher/hash-keccak"]
+blake2bhash = ["hasher/hash-blake2b"]
+sm3hash = ["hasher/hash-sm3"]
