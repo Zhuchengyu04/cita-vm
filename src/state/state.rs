@@ -9,6 +9,15 @@ use hashbrown::{HashMap, HashSet};
 use log::debug;
 use rayon::prelude::{IntoParallelRefMutIterator, ParallelIterator};
 
+use accumulators;
+use accumulators::accumulators::PrimeHash;
+    use accumulators::accumulators::group::RSAGroup;
+    use accumulators::accumulators::traits::{BatchedAccumulator, StaticAccumulator, StaticVectorCommitment};
+    use accumulators::accumulators::Accumulator;
+    use accumulators::accumulators::vc::binary;
+    use accumulators::num_bigint::RandPrime;
+    use accumulators::rand::{Rng, SeedableRng};
+    use accumulators::rand_chacha::ChaChaRng;
 use crate::common;
 use crate::common::hash;
 use crate::state::account::StateObject;
@@ -453,6 +462,7 @@ mod tests {
 
     #[test]
     fn test_code_from_database() {
+
         let a = Address::zero();
         let (root, db) = {
             let mut state = get_temp_state();
