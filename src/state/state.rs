@@ -11,7 +11,6 @@ use rayon::prelude::{IntoParallelRefMutIterator, ParallelIterator};
 //use std::str::FromStr;
 
 extern crate accumulators;
-extern crate classgroup;
 extern crate num_bigint;
 extern crate num_integer;
 extern crate num_traits;
