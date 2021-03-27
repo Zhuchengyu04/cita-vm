@@ -361,25 +361,25 @@ impl<B: DB> State<B> {
         let per_pos_size = 2;
         let l = block_number;
         let n = kv_size;
-        const slices_num = 4;
+        const slices_num :i32= 4;
         // let mut rng = ChaChaRng::from_seed(l);
         let mut values: Vec<String> = Vec::with_capacity(n);
-        
-        let mut slice_values:[Vec<String>;slices_num]  = [vec![];slices_num];
+        let sn:usize = slices_num.try_into().unwrap();
+        let mut slice_values:[Vec<String>;sn.try_into().unwrap()]  = [vec![];sn];
         for (key, value) in key_values.into_iter() {
-            let remains = usize::from(key.get(key.len()-1)) % 4;
+            let remains = (key.get(key.len()-1)).try_into().unwrap() % 4;
             let strs = format!("{}{}",String::from_utf8_lossy(&key),String::from_utf8_lossy(&value));
             // values.push(strs);
             slice_values[remains].push(strs);
         }
-        let sub_commitments:[Vec<String>;slices_num] = vec![];
+        let sub_commitments:[Vec<String>;sn] = [vec![];sn];
         let mut threads = vec![];
-        for i in 0..(slices_num-1){
-            let t = thread::spawn(move || { create_vc_commitment(format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i].len(),&slice_values[i],&sub_commitments[i]) });
+        for i in 0..(sn-1){
+            let t = thread::spawn(move || { create_vc_commitment(format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i.try_into().unwrap()].len(),&slice_values[i.try_into().unwrap()],&sub_commitments[i.try_into().unwrap()]) });
             threads.push(t);
         }
         let (mut all_prover_params, all_verifier_params) =
-        paramgen_from_seed(format!("123456789012345678901234567890{}",l.to_string()), 0, &slices_num).unwrap();
+        paramgen_from_seed(format!("123456789012345678901234567890{}",l.to_string()), 0, &sn).unwrap();
         all_prover_params.precomp_256();
         for t in threads {
             t.join().unwrap();
