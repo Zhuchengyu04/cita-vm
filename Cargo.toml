@@ -31,7 +31,8 @@ serde_json = "1.0"
 sha2 = "0.8"
 sha3 = "0.8"
 rayon = "1.0"
-accumulators = {git = "https://github.com/Zhuchengyu04/vc_commitment-zcy.git" ,branch = "master"}
+pointproofs = {git = "https://github.com/Zhuchengyu04/pointproofs.git" ,branch = "master"}
+pairing-plus = { git = "https://github.com/algorand/pairing-plus"}
 
 [dev-dependencies]
 bencher = "0.1"

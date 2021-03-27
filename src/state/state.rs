@@ -9,8 +9,8 @@ use hashbrown::{HashMap, HashSet};
 use log::debug;
 use rayon::prelude::{IntoParallelRefMutIterator, ParallelIterator};
 //use std::str::FromStr;
-
-extern crate accumulators;
+extern crate pairing_plus as pairing;
+extern crate pointproofs;
 extern crate num_bigint;
 extern crate num_integer;
 extern crate num_traits;
@@ -24,11 +24,8 @@ use crate::state::account_db::AccountDB;
 use crate::state::err::Error;
 use crate::state::object_entry::{ObjectStatus, StateObjectEntry};
 
-use accumulators::PrimeHash;
-use accumulators::group::RSAGroup;
-use accumulators::traits::{BatchedAccumulator, StaticAccumulator, StaticVectorCommitment};
-use accumulators::Accumulator;
-use accumulators::vc::binary;
+use pairing::serdes::SerDes;
+use pointproofs::pairings::*;
 use num_bigint::RandPrime;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaChaRng;
@@ -43,6 +40,8 @@ pub struct State<B> {
     pub cache: RefCell<HashMap<Address, StateObjectEntry>>,
     /// Checkpoints are used to revert to history
     pub checkpoints: RefCell<Vec<HashMap<Address, Option<StateObjectEntry>>>>,
+    //add vc
+    pub vc_commitment: num_bigint::BigUint,
 }
 
 impl<B: DB> State<B> {
@@ -309,7 +308,7 @@ impl<B: DB> State<B> {
     }
 
     /// Flush the data from cache to database.
-    pub fn commit(&mut self) -> Result<(), Error> {
+    pub fn commit(&mut self,block_number: u64) -> Result<(), Error> {
         assert!(self.checkpoints.borrow().is_empty());
         // Firstly, update account storage tree
         let db = Arc::clone(&self.db);
@@ -333,7 +332,7 @@ impl<B: DB> State<B> {
             .collect::<Result<(), Error>>()?;
 
         // Secondly, update the world state tree
-        let mut trie = PatriciaTrie::from(Arc::clone(&self.db), Arc::new(hash::get_hasher()), &self.root.0)?;
+        // let mut trie = PatriciaTrie::from(Arc::clone(&self.db), Arc::new(hash::get_hasher()), &self.root.0)?;
 
         let key_values = self
             .cache
@@ -348,12 +347,26 @@ impl<B: DB> State<B> {
                 }
             })
             .collect::<Vec<(Vec<u8>, Vec<u8>)>>();
-
+            //add vc
+        let kv_size = key_values.len();
+        
+        let per_pos_size = 2;
+        let l = block_number;
+        let n = kv_size;
+        let mut rng = ChaChaRng::from_seed(l);
+        let ph = Rc::new(PrimeHash::init(kv_size*per_pos_size));
+        let config = Config { lambda, n,  ph };
+        let mut vc = BinaryVectorCommitment::<Accumulator>::setup::<RSAGroup, _>(&mut rng, &config);
+        let mut val: Vec<bool> = (0..per_pos_size*kv_size).map(|_| rng.gen()).collect();
+        
         for (key, value) in key_values.into_iter() {
-            trie.insert(key, value)?;
+            key.append(&value);
+            
         }
 
+
         self.root = From::from(&trie.root()?[..]);
+        slef.vc_commitment
         self.db.flush().or_else(|e| Err(Error::DB(format!("{}", e))))
     }
 
