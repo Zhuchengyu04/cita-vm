@@ -314,9 +314,9 @@ impl<B: DB> State<B> {
             }
         }
     }
-    pub fn create_vc_commitment(seed:&String, ciphersuite: u8, slice_num: u32, &values: &Vec<String>, mut com:&String) {
+    pub fn create_vc_commitment(seed:&String, ciphersuite: u8, slice_num: u32, &values: &Vec<String>, &mut com:String) {
         let (mut prover_params, verifier_params) =
-        paramgen_from_seed(&seed, ciphersuite, &slice_num.try_into().unwrap()).unwrap();
+        paramgen_from_seed(&seed, ciphersuite, slice_num).unwrap();
         let state_commitment = Commitment::new(&prover_params, &values).unwrap();
         let mut commitment_bytes: Vec<u8> = vec![];
         state_commitment.serialize(&mut commitment_bytes, true);
@@ -381,7 +381,7 @@ impl<B: DB> State<B> {
         let sub_commitments:[Vec<String>;4] = [vec![];4];
         let mut threads = vec![];
         for i in 0..(4-1){
-            let t = thread::spawn(move || { create_vc_commitment(format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i.into().unwrap()].len(),slice_values[i.into().unwrap()],sub_commitments[i.into().unwrap()]) });
+            let t = thread::spawn(move || { create_vc_commitment(format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i as usize].len(),slice_values[i as usize],sub_commitments[i as usize]) });
             threads.push(t);
         }
         let (mut all_prover_params, all_verifier_params) =
