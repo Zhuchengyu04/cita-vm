@@ -374,7 +374,7 @@ impl<B: DB> State<B> {
         let mut values: Vec<String> = Vec::with_capacity(n);
         let mut slice_values:[Vec<String>;4]  = [vec![];4];
         for (key, value) in key_values.into_iter() {
-            let mut k = key.get(key.len()-1).unwrap();
+            let mut k = *(key.get(key.len()-1).unwrap());
             k &= 0b0000_0011;
             let ptr :*const u8 = k.as_ptr();
             let ptr :*const u32 = ptr as *const u32;
