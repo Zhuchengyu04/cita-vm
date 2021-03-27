@@ -58,7 +58,7 @@ impl<B: DB> State<B> {
             cache: RefCell::new(HashMap::new()),
             checkpoints: RefCell::new(Vec::new()),
             //add vc 
-            vc_commitment::  H256::from(0),
+            vc_commitment: H256::from(0),
         })
     }
 
@@ -364,8 +364,8 @@ impl<B: DB> State<B> {
         paramgen_from_seed(format!("123456789012345678901234567890{}",l.to_string()), 0, 10000).unwrap();
        
         for (key, value) in key_values.into_iter() {
-            key.append(&value.clone().as_mut());
-            values.push(key.to_string());
+            let strs = format!("{}{}",key.to_string(),value.to_string());
+            values.push(strs);
             
         }
         let state_commitment = Commitment::new(&prover_params, &values).unwrap();
@@ -374,7 +374,7 @@ impl<B: DB> State<B> {
         self.root = H256::from(0);
         let mut commitment_bytes: Vec<u8> = vec![];
         assert!(state_commitment.serialize(&mut commitment_bytes, true).is_ok());
-        self.vc_commitment = H256::from(commitment_bytes.to_string());
+        self.vc_commitment = ser::from_str(&format!("{:?}", String::from_utf8(commitment_bytes))).unwrap()
         self.db.flush().or_else(|e| Err(Error::DB(format!("{}", e))))
     }
 
