@@ -353,20 +353,20 @@ impl<B: DB> State<B> {
         let per_pos_size = 2;
         let l = block_number;
         let n = kv_size;
-        let mut rng = ChaChaRng::from_seed(l);
-        let ph = Rc::new(PrimeHash::init(kv_size*per_pos_size));
-        let config = Config { lambda, n,  ph };
-        let mut vc = BinaryVectorCommitment::<Accumulator>::setup::<RSAGroup, _>(&mut rng, &config);
-        let mut val: Vec<bool> = (0..per_pos_size*kv_size).map(|_| rng.gen()).collect();
-        
+        // let mut rng = ChaChaRng::from_seed(l);
+        let mut values: Vec<String> = Vec::with_capacity(n);
+        let (mut prover_params, verifier_params) =
+        paramgen_from_seed(format!("123456789012345678901234567890{}",l.to_string()), 0, 10000).unwrap();
+       
         for (key, value) in key_values.into_iter() {
-            key.append(&value);
+            values.push(key.append(&value));
             
         }
+        let state_commitment = Commitment::new(&prover_params, &values).unwrap();
 
 
         self.root = From::from(&trie.root()?[..]);
-        slef.vc_commitment
+        assert!(state_commitment.serialize(&mut self.vc_commitment, true).is_ok());
         self.db.flush().or_else(|e| Err(Error::DB(format!("{}", e))))
     }
 
