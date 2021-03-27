@@ -361,21 +361,21 @@ impl<B: DB> State<B> {
         let per_pos_size = 2;
         let l = block_number;
         let n = kv_size;
-        let slices_num = 4;
+        const slices_num = 4;
         // let mut rng = ChaChaRng::from_seed(l);
         let mut values: Vec<String> = Vec::with_capacity(n);
         
         let mut slice_values:[Vec<String>;slices_num]  = [vec![];slices_num];
         for (key, value) in key_values.into_iter() {
-            let remains = Integer::from(key.get(key.len()-1)) % 4;
+            let remains = usize::from(key.get(key.len()-1)) % 4;
             let strs = format!("{}{}",String::from_utf8_lossy(&key),String::from_utf8_lossy(&value));
             // values.push(strs);
             slice_values[remains].push(strs);
         }
-        let sub_commitments:Vec<Vec<u8>> = Vec![];
+        let sub_commitments:[Vec<String>;slices_num] = vec![];
         let mut threads = vec![];
         for i in 0..(slices_num-1){
-            let t = thread::spawn(move || { create_vc_commitment(format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i].len(),&slice_values[i],&sub_commitments.get(i)) });
+            let t = thread::spawn(move || { create_vc_commitment(format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i].len(),&slice_values[i],&sub_commitments[i]) });
             threads.push(t);
         }
         let (mut all_prover_params, all_verifier_params) =
@@ -388,17 +388,19 @@ impl<B: DB> State<B> {
 
 
         self.root = H256::from(0);
-        let mut commitment_bytes: Vec<u8> = Vec![];
+        let mut commitment_bytes: Vec<u8> = vec![];
         assert!(state_commitment.serialize(&mut commitment_bytes, true).is_ok());
         self.vc_commitment = ser::from_str(&format!("{:?}", String::from_utf8(commitment_bytes))).unwrap();
         self.db.flush().or_else(|e| Err(Error::DB(format!("{}", e))))
     }
 
-    pub fn create_vc_commitment(&seed:String, &ciphersuite: u8, &slice_num: u32, &values: Vec<String>, &mut com:Vec<u8>) {
+    pub fn create_vc_commitment(&seed:String, &ciphersuite: u8, &slice_num: u32, &values: Vec<String>, &mut com:String) {
         let (mut prover_params, verifier_params) =
         paramgen_from_seed(&seed, &ciphersuite, &slice_num).unwrap();
         let state_commitment = Commitment::new(&prover_params, &values).unwrap();
-         state_commitment.serialize(&mut com, true);
+        let mut commitment_bytes: Vec<u8> = vec![];
+        state_commitment.serialize(&mut commitment_bytes, true);
+        com = String::from_utf8(commitment_bytes);
     }
 
     /// Create a recoverable checkpoint of this state. Return the checkpoint index.
