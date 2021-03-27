@@ -364,18 +364,17 @@ impl<B: DB> State<B> {
         const slices_num :i32= 4;
         // let mut rng = ChaChaRng::from_seed(l);
         let mut values: Vec<String> = Vec::with_capacity(n);
-        let sn:usize = slices_num.try_into().unwrap();
-        let mut slice_values:[Vec<String>;sn.try_into().unwrap()]  = [vec![];sn];
+        let mut slice_values:[Vec<String>;slices_num.try_into().unwrap()]  = [vec![];slices_num.try_into().unwrap()];
         for (key, value) in key_values.into_iter() {
             let remains = (key.get(key.len()-1)).try_into().unwrap() % 4;
             let strs = format!("{}{}",String::from_utf8_lossy(&key),String::from_utf8_lossy(&value));
             // values.push(strs);
             slice_values[remains].push(strs);
         }
-        let sub_commitments:[Vec<String>;sn] = [vec![];sn];
+        let sub_commitments:[Vec<String>;slices_num.try_into().unwrap()] = [vec![];slices_num.try_into().unwrap()];
         let mut threads = vec![];
-        for i in 0..(sn-1){
-            let t = thread::spawn(move || { create_vc_commitment(format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i.try_into().unwrap()].len(),&slice_values[i.try_into().unwrap()],&sub_commitments[i.try_into().unwrap()]) });
+        for i in 0..(slices_num.try_into().unwrap()-1){
+            let t = thread::spawn(move || { create_vc_commitment(format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i.into().unwrap()].len(),&slice_values[i.into().unwrap()],&sub_commitments[i.into().unwrap()]) });
             threads.push(t);
         }
         let (mut all_prover_params, all_verifier_params) =
