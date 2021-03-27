@@ -41,7 +41,7 @@ pub struct State<B> {
     /// Checkpoints are used to revert to history
     pub checkpoints: RefCell<Vec<HashMap<Address, Option<StateObjectEntry>>>>,
     //add vc
-    pub vc_commitment: num_bigint::BigUint,
+    pub vc_commitment: H256,
 }
 
 impl<B: DB> State<B> {
@@ -365,7 +365,7 @@ impl<B: DB> State<B> {
         let state_commitment = Commitment::new(&prover_params, &values).unwrap();
 
 
-        self.root = From::from(&trie.root()?[..]);
+        self.root = H256::from(0);
         assert!(state_commitment.serialize(&mut self.vc_commitment, true).is_ok());
         self.db.flush().or_else(|e| Err(Error::DB(format!("{}", e))))
     }
