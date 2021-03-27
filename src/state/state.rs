@@ -366,7 +366,7 @@ impl<B: DB> State<B> {
         paramgen_from_seed(format!("123456789012345678901234567890{}",l.to_string()), 0, 10000).unwrap();
        
         for (key, value) in key_values.into_iter() {
-            let strs = format!("{}{}",String::from_utf8(key),String::from_utf8(value));
+            let strs = format!("{}{}",String::from_utf8_lossy(key),String::from_utf8_lossy(value));
             values.push(strs);
             
         }
