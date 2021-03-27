@@ -373,15 +373,15 @@ impl<B: DB> State<B> {
         let mut values: Vec<String> = Vec::with_capacity(n);
         let mut slice_values:[Vec<String>;4]  = [vec![];4];
         for (key, value) in key_values.into_iter() {
-            let remains = (key.get(key.len()-1) as  i32)% 4;
+            let remains = key.get(key.len()-1) & 0b0000_0011;
             let strs = format!("{}{}",String::from_utf8_lossy(&key),String::from_utf8_lossy(&value));
             // values.push(strs);
-            slice_values[remains].push(strs);
+            slice_values[remains as usize].push(strs);
         }
         let mut sub_commitments:Vec<String> = Vec::with_capacity(4);
         let mut threads = vec![];
         for i in 0..(4-1){
-            let t = thread::spawn(move || { create_vc_commitment(format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i as usize].len(),slice_values[i as usize],sub_commitments[i as usize]) });
+            let t = thread::spawn(move || { self.create_vc_commitment(format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i as usize].len(),slice_values[i as usize],sub_commitments[i as usize]) });
             threads.push(t);
         }
         let (mut all_prover_params, all_verifier_params) =
