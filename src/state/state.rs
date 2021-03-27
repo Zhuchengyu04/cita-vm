@@ -374,7 +374,7 @@ impl<B: DB> State<B> {
         let mut values: Vec<String> = Vec::with_capacity(n);
         let mut slice_values:[Vec<String>;4]  = [vec![];4];
         for (key, value) in key_values.into_iter() {
-            let mut k = key.get(key.len()-1);
+            let mut k = key.get(key.len()-1).take();
             k &= 0b0000_0011;
             let ptr :*const u8 = k.as_ptr();
             let ptr :*const u32 = ptr as *const u32;
@@ -387,7 +387,7 @@ impl<B: DB> State<B> {
         let mut sub_commitments:Vec<String> = Vec::with_capacity(4);
         let mut threads = vec![];
         for i in 0..(4-1){
-            let t = thread::spawn(move || { create_vc_commitment(format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i as usize].len(),slice_values[i as usize],sub_commitments[i as usize]) });
+            let t = thread::spawn(move || { create_vc_commitment(&format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i as usize].len() as u32,&slice_values[i as usize],&mut sub_commitments[i as usize]) });
             threads.push(t);
         }
         let (mut all_prover_params, all_verifier_params) =
