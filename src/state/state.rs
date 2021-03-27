@@ -26,6 +26,7 @@ use crate::state::object_entry::{ObjectStatus, StateObjectEntry};
 
 use pairing::serdes::SerDes;
 use pointproofs::pairings::*;
+use pointproofs::pairings::param::paramgen_from_seed;
 use num_bigint::RandPrime;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaChaRng;
@@ -56,6 +57,8 @@ impl<B: DB> State<B> {
             root: From::from(&root[..]),
             cache: RefCell::new(HashMap::new()),
             checkpoints: RefCell::new(Vec::new()),
+            //add vc 
+            vc_commitment::  H256::from(0),
         })
     }
 
@@ -74,6 +77,8 @@ impl<B: DB> State<B> {
             root,
             cache: RefCell::new(HashMap::new()),
             checkpoints: RefCell::new(Vec::new()),
+            //add vc 
+            vc_commitment::H256::from(0),
         })
     }
 
@@ -359,14 +364,17 @@ impl<B: DB> State<B> {
         paramgen_from_seed(format!("123456789012345678901234567890{}",l.to_string()), 0, 10000).unwrap();
        
         for (key, value) in key_values.into_iter() {
-            values.push(key.append(&value));
+            key.append(&value.clone().as_mut());
+            values.push(key);
             
         }
         let state_commitment = Commitment::new(&prover_params, &values).unwrap();
 
 
         self.root = H256::from(0);
-        assert!(state_commitment.serialize(&mut self.vc_commitment, true).is_ok());
+        let mut commitment_bytes: Vec<u8> = vec![];
+        assert!(state_commitment.serialize(&mut commitment_bytes, true).is_ok());
+        self.vc_commitment = H256::from(commitment_bytes);
         self.db.flush().or_else(|e| Err(Error::DB(format!("{}", e))))
     }
 
