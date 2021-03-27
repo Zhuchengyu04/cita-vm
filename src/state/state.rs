@@ -314,9 +314,9 @@ impl<B: DB> State<B> {
             }
         }
     }
-    pub fn create_vc_commitment(&seed:String, &ciphersuite: u8, &slice_num: u32, &values: Vec<String>, &mut com:String) {
+    pub fn create_vc_commitment(seed:&String, ciphersuite: u8, slice_num: u32, &values: &Vec<String>, mut com:&String) {
         let (mut prover_params, verifier_params) =
-        paramgen_from_seed(&seed, &ciphersuite, &slices_num.try_into().unwrap()).unwrap();
+        paramgen_from_seed(&seed, &ciphersuite, &slice_num.try_into().unwrap()).unwrap();
         let state_commitment = Commitment::new(&prover_params, &values).unwrap();
         let mut commitment_bytes: Vec<u8> = vec![];
         state_commitment.serialize(&mut commitment_bytes, true);
