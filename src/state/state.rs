@@ -314,7 +314,7 @@ impl<B: DB> State<B> {
             }
         }
     }
-    fn create_vc_commitment(seed:&String, ciphersuite: u8, slice_num: u32, values: &Vec<String>,  com:&mut String) {
+    pub fn create_vc_commitment(seed:&String, ciphersuite: u8, slice_num: u32, values: &Vec<String>,  com:&mut String) {
         let (mut prover_params, verifier_params) =
         paramgen_from_seed(&seed, ciphersuite, slice_num as usize).unwrap();
         let state_commitment = Commitment::new(&prover_params, &values).unwrap();
@@ -373,7 +373,9 @@ impl<B: DB> State<B> {
         let mut values: Vec<String> = Vec::with_capacity(n);
         let mut slice_values:[Vec<String>;4]  = [vec![];4];
         for (key, value) in key_values.into_iter() {
-            let remains = key.get(key.len()-1) & 0b0000_0011;
+            let mut k = key.get(key.len()-1);
+            k &= 0b0000_0011;
+            let remains =  k;
             let strs = format!("{}{}",String::from_utf8_lossy(&key),String::from_utf8_lossy(&value));
             // values.push(strs);
             slice_values[remains as usize].push(strs);
