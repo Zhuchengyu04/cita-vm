@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::sync::Arc;
+use std::thread;
 
 use cita_trie::DB;
 use cita_trie::{PatriciaTrie, Trie};
@@ -360,17 +361,30 @@ impl<B: DB> State<B> {
         let per_pos_size = 2;
         let l = block_number;
         let n = kv_size;
+        let slices_num = 4;
         // let mut rng = ChaChaRng::from_seed(l);
         let mut values: Vec<String> = Vec::with_capacity(n);
-        let (mut prover_params, verifier_params) =
-        paramgen_from_seed(format!("123456789012345678901234567890{}",l.to_string()), 0, 10000).unwrap();
-       
+        
+        let mut slice_values:Vec<Vec<String>>  = Vec::with_capacity(16/slices_num);
         for (key, value) in key_values.into_iter() {
+            let remains = key.get(key.len()-1) % 4;
             let strs = format!("{}{}",String::from_utf8_lossy(&key),String::from_utf8_lossy(&value));
-            values.push(strs);
-            
+            // values.push(strs);
+            slice_values.get(remains).push(strs);
         }
-        let state_commitment = Commitment::new(&prover_params, &values).unwrap();
+        let sub_commitments:Vec<Vec<u8>> = Vec![];
+        let mut threads = vec![];
+        for i in 0..(slices_num-1){
+            let t = thread::spawn(move || { create_vc_commitment(format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values.get(i).len(),slice_values.get(i),&sub_commitments.get(i)) });
+            threads.push(t);
+        }
+        let (mut all_prover_params, all_verifier_params) =
+        paramgen_from_seed(format!("123456789012345678901234567890{}",l.to_string()), 0, &slices_num).unwrap();
+        all_prover_params.precomp_256();
+        for t in threads {
+            t.join().unwrap();
+        }
+        let state_commitment = Commitment::new(&prover_params, &sub_commitments).unwrap();
 
 
         self.root = H256::from(0);
@@ -378,6 +392,13 @@ impl<B: DB> State<B> {
         assert!(state_commitment.serialize(&mut commitment_bytes, true).is_ok());
         self.vc_commitment = ser::from_str(&format!("{:?}", String::from_utf8(commitment_bytes))).unwrap();
         self.db.flush().or_else(|e| Err(Error::DB(format!("{}", e))))
+    }
+
+    pub fn create_vc_commitment(&seed:String, &ciphersuite: u8, &slice_num: u32, &values: Vec<String>, mut &com:Vec<u8>) {
+        let (mut prover_params, verifier_params) =
+        paramgen_from_seed(&seed, &ciphersuite, &slices_num).unwrap();
+        let state_commitment = Commitment::new(&prover_params, &values).unwrap();
+         state_commitment.serialize(&mut com, true);
     }
 
     /// Create a recoverable checkpoint of this state. Return the checkpoint index.
