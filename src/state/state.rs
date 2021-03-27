@@ -320,7 +320,7 @@ impl<B: DB> State<B> {
         let state_commitment = Commitment::new(&prover_params, &values).unwrap();
         let mut commitment_bytes: Vec<u8> = vec![];
         state_commitment.serialize(&mut commitment_bytes, true);
-        com = format!("{:?}", String::from_utf8(commitment_bytes));
+        com = &mut format!("{:?}", String::from_utf8(commitment_bytes));
     }
     /// Flush the data from cache to database.
     pub fn commit(&mut self,block_number: u64) -> Result<(), Error> {
