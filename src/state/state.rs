@@ -397,13 +397,13 @@ impl<B: DB> State<B> {
             let remains =  k as usize;
             let strs = format!("{}{}",String::from_utf8_lossy(&key),String::from_utf8_lossy(&value));
             // values.push(strs);
-            slice_map.get(remains).push(strs);
+            slice_map.get(&remains).unwrap().push(strs);
         }
         let mut sub_commitments:Vec<String> = vec![String::new()];
         let mut threads = vec![];
         for i in 0..(3){
-            let sizes = (slice_map.get(i).len() as u32);
-            let t = thread::spawn(move || { create_vc_commitment(&format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,sizes,& slice_map.get(i.clone() as usize), &mut sub_commitments[i.clone() as usize]) });
+            let sizes = (slice_map.get(&i).unwrap().len() as u32);
+            let t = thread::spawn(move || { create_vc_commitment(&format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,sizes,& slice_map.get(&i).unwrap(), &mut sub_commitments[i.clone() as usize]) });
             threads.push(t);
         }
         let (mut all_prover_params, all_verifier_params) =
