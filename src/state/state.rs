@@ -388,7 +388,7 @@ impl<B: DB> State<B> {
         let mut sub_commitments:Vec<String> = Vec::with_capacity(4);
         let mut threads = vec![];
         for i in 0..(4-1){
-            let sizes = &slice_values[i.clone() as usize].len() as u32;
+            let sizes = ((&slice_values[i.clone() as usize]).len() as u32);
             let t = thread::spawn(move || { create_vc_commitment(&format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,sizes,& slice_values[i.clone() as usize], &mut sub_commitments[i.clone() as usize]) });
             threads.push(t);
         }
