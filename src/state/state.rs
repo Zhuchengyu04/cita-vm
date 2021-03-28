@@ -372,7 +372,10 @@ impl<B: DB> State<B> {
         const slices_num :i32= 4;
         // let mut rng = ChaChaRng::from_seed(l);
         let mut values: Vec<String> = Vec::with_capacity(n);
-        let mut slice_values:[Vec<String>;4] =[vec![String::new()];4];
+        let mut slice_values:[Vec<String>;4];
+        for index in 0..3{
+            slice_values[index] = vec![String::new()];
+        }
         for (key, value) in key_values.into_iter() {
             let mut k = *(key.get(key.len()-1).unwrap());
             k &= 0b0000_0011;
@@ -560,7 +563,7 @@ mod tests {
                 "0xf1885eda54b7a053318cd41e2093220dab15d65381b1157a3633a83bfd5c9239".into()
             );
             assert_eq!(state.code_size(&a).unwrap(), 3);
-            state.commit().unwrap();
+            state.commit(1).unwrap();
             assert_eq!(state.code(&a).unwrap(), vec![1, 2, 3]);
             assert_eq!(
                 state.code_hash(&a).unwrap(),
@@ -591,7 +594,7 @@ mod tests {
                 "0xf1885eda54b7a053318cd41e2093220dab15d65381b1157a3633a83bfd5c9239".into()
             );
             assert_eq!(state.abi_size(&a).unwrap(), 3);
-            state.commit().unwrap();
+            state.commit(1).unwrap();
             assert_eq!(state.abi(&a).unwrap(), vec![1, 2, 3]);
             assert_eq!(
                 state.abi_hash(&a).unwrap(),
@@ -618,7 +621,7 @@ mod tests {
             state
                 .set_storage(&a, H256::from(&U256::from(1u64)), H256::from(&U256::from(69u64)))
                 .unwrap();
-            state.commit().unwrap();
+            state.commit(1).unwrap();
             (state.root, state.db)
         };
 
@@ -636,7 +639,7 @@ mod tests {
             let mut state = get_temp_state();
             state.inc_nonce(&a).unwrap();
             state.add_balance(&a, U256::from(69u64)).unwrap();
-            state.commit().unwrap();
+            state.commit(1).unwrap();
             assert_eq!(state.balance(&a).unwrap(), U256::from(69u64));
             assert_eq!(state.nonce(&a).unwrap(), U256::from(1u64));
             (state.root, state.db)
@@ -666,7 +669,7 @@ mod tests {
         let (root, db) = {
             let mut state = get_temp_state();
             state.add_balance(&a, U256::from(69u64)).unwrap();
-            state.commit().unwrap();
+            state.commit(1).unwrap();
             (state.root, state.db)
         };
 
@@ -675,7 +678,7 @@ mod tests {
             assert_eq!(state.exist(&a).unwrap(), true);
             assert_eq!(state.balance(&a).unwrap(), U256::from(69u64));
             state.kill_contract(&a);
-            state.commit().unwrap();
+            state.commit(1).unwrap();
             assert_eq!(state.exist(&a).unwrap(), false);
             assert_eq!(state.balance(&a).unwrap(), U256::from(0u64));
             (state.root, state.db)
@@ -694,17 +697,17 @@ mod tests {
 
         state.add_balance(&a, U256::from(69u64)).unwrap();
         assert_eq!(state.balance(&a).unwrap(), U256::from(69u64));
-        state.commit().unwrap();
+        state.commit(1).unwrap();
         assert_eq!(state.balance(&a).unwrap(), U256::from(69u64));
 
         state.sub_balance(&a, U256::from(42u64)).unwrap();
         assert_eq!(state.balance(&a).unwrap(), U256::from(27u64));
-        state.commit().unwrap();
+        state.commit(1).unwrap();
         assert_eq!(state.balance(&a).unwrap(), U256::from(27u64));
         state.transfer_balance(&a, &b, U256::from(18)).unwrap();
         assert_eq!(state.balance(&a).unwrap(), U256::from(9u64));
         assert_eq!(state.balance(&b).unwrap(), U256::from(18u64));
-        state.commit().unwrap();
+        state.commit(1).unwrap();
         assert_eq!(state.balance(&a).unwrap(), U256::from(9u64));
         assert_eq!(state.balance(&b).unwrap(), U256::from(18u64));
     }
@@ -717,11 +720,11 @@ mod tests {
         assert_eq!(state.nonce(&a).unwrap(), U256::from(1u64));
         state.inc_nonce(&a).unwrap();
         assert_eq!(state.nonce(&a).unwrap(), U256::from(2u64));
-        state.commit().unwrap();
+        state.commit(1).unwrap();
         assert_eq!(state.nonce(&a).unwrap(), U256::from(2u64));
         state.inc_nonce(&a).unwrap();
         assert_eq!(state.nonce(&a).unwrap(), U256::from(3u64));
-        state.commit().unwrap();
+        state.commit(1).unwrap();
         assert_eq!(state.nonce(&a).unwrap(), U256::from(3u64));
     }
 
@@ -731,7 +734,7 @@ mod tests {
         let a = Address::zero();
         assert_eq!(state.balance(&a).unwrap(), U256::from(0u64));
         assert_eq!(state.nonce(&a).unwrap(), U256::from(0u64));
-        state.commit().unwrap();
+        state.commit(11).unwrap();
         assert_eq!(state.balance(&a).unwrap(), U256::from(0u64));
         assert_eq!(state.nonce(&a).unwrap(), U256::from(0u64));
     }
@@ -741,7 +744,7 @@ mod tests {
         let mut state = get_temp_state();
         let a = Address::zero();
         state.new_contract(&a, U256::from(0u64), U256::from(0u64), vec![]);
-        state.commit().unwrap();
+        state.commit(1).unwrap();
         assert_eq!(
             state.root,
             "530acecc6ec873396bb3e90b6578161f9688ed7eeeb93d6fba5684895a93b78a".into()
@@ -822,7 +825,7 @@ mod tests {
         state.discard_checkpoint(); // discard c2
         state.revert_checkpoint(); // revert to c1
         assert_eq!(state.exist(&a).unwrap(), false);
-        state.commit().unwrap();
+        state.commit(1).unwrap();
         assert_eq!(orig_root, state.root);
     }
 
@@ -833,7 +836,7 @@ mod tests {
         let k = H256::from(U256::from(0));
 
         state.set_storage(&a, k, H256::from(U256::from(0xffff))).unwrap();
-        state.commit().unwrap();
+        state.commit(1).unwrap();
         state.clear();
 
         let orig_root = state.root;
@@ -849,7 +852,7 @@ mod tests {
         state.revert_checkpoint(); // revert to c1
         assert_eq!(state.get_storage(&a, &k).unwrap(), H256::from(U256::from(0xffff)));
 
-        state.commit().unwrap();
+        state.commit(1).unwrap();
         assert_eq!(orig_root, state.root);
     }
 
@@ -864,7 +867,7 @@ mod tests {
         assert_eq!(state.code(&a).unwrap(), vec![10u8, 20, 30, 40, 50]);
         assert_eq!(state.balance(&a).unwrap(), 10.into());
         assert_eq!(state.get_storage(&a, &10.into()).unwrap(), 10.into());
-        state.commit().unwrap();
+        state.commit(1).unwrap();
         let orig_root = state.root;
 
         // Top         => account_a: balance=8, nonce=0, code=[10, 20, 30, 40, 50],
@@ -907,7 +910,7 @@ mod tests {
         assert_eq!(state.balance(&a).unwrap(), 10.into());
         assert_eq!(state.get_storage(&a, &10.into()).unwrap(), 10.into());
 
-        state.commit().unwrap();
+        state.commit(1).unwrap();
         assert_eq!(orig_root, state.root);
     }
 
@@ -917,7 +920,7 @@ mod tests {
         let a: Address = 1000.into();
         let b: Address = 2000.into();
         state.new_contract(&a, 5.into(), 0.into(), vec![10u8, 20, 30, 40, 50]);
-        state.commit().unwrap();
+        state.commit(1).unwrap();
 
         // The state only contains one account, should be a single leaf node, therefore the proof
         // length is 1
@@ -941,7 +944,7 @@ mod tests {
         state.new_contract(&a, 5.into(), 0.into(), vec![10u8, 20, 30, 40, 50]);
         state.set_storage(&a, 10.into(), 10.into()).unwrap();
         state.new_contract(&b, 5.into(), 0.into(), vec![10u8, 20, 30, 40, 50]);
-        state.commit().unwrap();
+        state.commit(1).unwrap();
 
         // account not exist
         let proof = state.get_storage_proof(&c, &10.into()).unwrap();
@@ -965,7 +968,7 @@ mod tests {
     #[test]
     fn create_empty() {
         let mut state = get_temp_state();
-        state.commit().unwrap();
+        state.commit(1).unwrap();
 
         #[cfg(feature = "sha3hash")]
         let expected = "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421";
