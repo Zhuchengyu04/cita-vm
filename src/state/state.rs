@@ -47,13 +47,13 @@ pub struct State<B> {
     //add vc
     pub vc_commitment: H256,
 }
-pub fn create_vc_commitment(seed:&String, ciphersuite: u8, slice_num: u32, values: &Vec<String>, mut com: &String) {
+pub fn create_vc_commitment(seed:&String, ciphersuite: u8, slice_num: u32, &mut values: Vec<String>, &mut com: String) {
     let (mut prover_params, verifier_params) =
     paramgen_from_seed(&seed, ciphersuite, slice_num as usize).unwrap();
     let state_commitment = Commitment::new(&prover_params, &values).unwrap();
     let mut commitment_bytes: Vec<u8> = vec![];
     state_commitment.serialize(&mut commitment_bytes, true);
-    com = &format!("{:?}", String::from_utf8(commitment_bytes));
+    com = format!("{:?}", String::from_utf8(commitment_bytes));
 }
 
 impl<B: DB> State<B> {
@@ -372,7 +372,7 @@ impl<B: DB> State<B> {
         const slices_num :i32= 4;
         // let mut rng = ChaChaRng::from_seed(l);
         let mut values: Vec<String> = Vec::with_capacity(n);
-        let mut slice_values:[Vec<String>;4]  = [vec![String::new()];4];
+        let mut slice_values:[Vec<String>;4] ;
         for (key, value) in key_values.into_iter() {
             let mut k = *(key.get(key.len()-1).unwrap());
             k &= 0b0000_0011;
