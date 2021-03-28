@@ -372,24 +372,38 @@ impl<B: DB> State<B> {
         const slices_num :i32= 4;
         // let mut rng = ChaChaRng::from_seed(l);
         let mut values: Vec<String> = Vec::with_capacity(n);
-        let mut slice_values:Vec<Vec<String>> = vec![vec![String::new()]];
-        
+        // let mut slice_values:Vec<Vec<String>> = vec![vec![String::new()]];
+        let mut slice_value_0:Vec<String> = vec![String::new()];
+        let mut slice_value_1:Vec<String> = vec![String::new()];
+        let mut slice_value_2:Vec<String> = vec![String::new()];
+        let mut slice_value_3:Vec<String> = vec![String::new()];
+        let mut slice_map = HashMap::new();
+        for i in 0..3{
+            if i ==0{
+                slice_map.insert(0,slice_value_0);
+            }else if i ==1{
+                slice_map.insert(1,slice_value_1);
+            }else if i ==2{
+                slice_map.insert(2,slice_value_2);
+            }else {
+                slice_map.insert(3,slice_value_3);
+            }
+            
+        }
         for (key, value) in key_values.into_iter() {
             let mut k = *(key.get(key.len()-1).unwrap());
             k &= 0b0000_0011;
-            // let ptr :*const u8 = (k).try_into().unwrap().as_ptr();
-            // let ptr :*const u32 = ptr as *const u32;
-            // let s = unsafe{ *ptr};
+           
             let remains =  k as usize;
             let strs = format!("{}{}",String::from_utf8_lossy(&key),String::from_utf8_lossy(&value));
             // values.push(strs);
-            slice_values[remains ].push(strs);
+            slice_map.get(remains).push(strs);
         }
-        let mut sub_commitments:Vec<String> = Vec::with_capacity(4);
+        let mut sub_commitments:Vec<String> = vec![String::new()];
         let mut threads = vec![];
-        for i in 0..(4-1){
-            let sizes = ((&slice_values[i.clone() as usize]).len() as u32);
-            let t = thread::spawn(move || { create_vc_commitment(&format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,sizes,& slice_values[i.clone() as usize], &mut sub_commitments[i.clone() as usize]) });
+        for i in 0..(3){
+            let sizes = (slice_map.get(i).len() as u32);
+            let t = thread::spawn(move || { create_vc_commitment(&format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,sizes,& slice_map.get(i.clone() as usize), &mut sub_commitments[i.clone() as usize]) });
             threads.push(t);
         }
         let (mut all_prover_params, all_verifier_params) =
