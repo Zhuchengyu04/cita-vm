@@ -47,7 +47,7 @@ pub struct State<B> {
     //add vc
     pub vc_commitment: H256,
 }
-pub fn create_vc_commitment(seed:&String, ciphersuite: u8, slice_num: u32, values:&mut   Vec<String>,  com: &mut String) {
+pub fn create_vc_commitment(seed:&String, ciphersuite: u8, slice_num: u32, values:&   Vec<String>,  com: &mut String) {
     let (mut prover_params, verifier_params) =
     paramgen_from_seed(&seed, ciphersuite, slice_num as usize).unwrap();
     let state_commitment = Commitment::new(&prover_params, values).unwrap();
@@ -372,7 +372,7 @@ impl<B: DB> State<B> {
         const slices_num :i32= 4;
         // let mut rng = ChaChaRng::from_seed(l);
         let mut values: Vec<String> = Vec::with_capacity(n);
-        let mut slice_values:[Vec<String>;4];
+        let mut slice_values:[Vec<String>;4] = [vec![""];4];
         for index in 0..3{
             slice_values[index] = vec![String::new()];
         }
@@ -390,7 +390,7 @@ impl<B: DB> State<B> {
         let mut sub_commitments:Vec<String> = Vec::with_capacity(4);
         let mut threads = vec![];
         for i in 0..(4-1){
-            let t = thread::spawn(move || { create_vc_commitment(&format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i as usize].len() as u32,&mut slice_values[i as usize], &mut sub_commitments[i as usize]) });
+            let t = thread::spawn(move || { create_vc_commitment(&format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,slice_values[i.clone() as usize].len() as u32,& slice_values[i.clone() as usize], &mut sub_commitments[i.clone() as usize]) });
             threads.push(t);
         }
         let (mut all_prover_params, all_verifier_params) =
