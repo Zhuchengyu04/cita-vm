@@ -53,7 +53,7 @@ pub fn create_vc_commitment(seed:&String, ciphersuite: u8, slice_num: u32, value
     let state_commitment = Commitment::new(&prover_params, &values).unwrap();
     let mut commitment_bytes: Vec<u8> = vec![];
     state_commitment.serialize(&mut commitment_bytes, true);
-    com = format!("{:?}", String::from_utf8(commitment_bytes));
+    com = &format!("{:?}", String::from_utf8(commitment_bytes));
 }
 
 impl<B: DB> State<B> {
