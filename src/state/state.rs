@@ -376,10 +376,10 @@ impl<B: DB> State<B> {
         for (key, value) in key_values.into_iter() {
             let mut k = *(key.get(key.len()-1).unwrap());
             k &= 0b0000_0011;
-            let ptr :*const u8 = (&k).as_ptr();
-            let ptr :*const u32 = ptr as *const u32;
-            let s = unsafe{ *ptr};
-            let remains =  s as usize;
+            // let ptr :*const u8 = (k).try_into().unwrap().as_ptr();
+            // let ptr :*const u32 = ptr as *const u32;
+            // let s = unsafe{ *ptr};
+            let remains =  k as usize;
             let strs = format!("{}{}",String::from_utf8_lossy(&key),String::from_utf8_lossy(&value));
             // values.push(strs);
             slice_values[remains ].push(strs);
