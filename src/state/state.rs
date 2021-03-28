@@ -372,7 +372,7 @@ impl<B: DB> State<B> {
         const slices_num :i32= 4;
         // let mut rng = ChaChaRng::from_seed(l);
         let mut values: Vec<String> = Vec::with_capacity(n);
-        let mut slice_values:[Vec<String>;4] = [vec![""];4];
+        let mut slice_values:[Vec<String>;4] = [vec!["".to_string()];4];
         for index in 0..3{
             slice_values[index] = vec![String::new()];
         }
