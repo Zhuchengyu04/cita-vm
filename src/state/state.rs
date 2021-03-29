@@ -379,10 +379,10 @@ impl<B: DB> State<B> {
 
         let mut slice_map = HashMap::new();
 
-        slice_map.insert(0, &mut slice_value_0);
-        slice_map.insert(1, &mut slice_value_1);
-        slice_map.insert(2, &mut slice_value_2);
-        slice_map.insert(3, &mut slice_value_3);
+        slice_map.insert(0, slice_value_0.clone());
+        slice_map.insert(1, slice_value_1.clone());
+        slice_map.insert(2, slice_value_2.clone());
+        slice_map.insert(3, slice_value_3.clone());
 
         for (key, value) in key_values.into_iter() {
             let mut k = *(key.get(key.len() - 1).unwrap());
