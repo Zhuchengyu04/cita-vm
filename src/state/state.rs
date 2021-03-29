@@ -397,7 +397,7 @@ impl<B: DB> State<B> {
             let remains =  k as usize;
             let strs = format!("{}{}",String::from_utf8_lossy(&key),String::from_utf8_lossy(&value));
             // values.push(strs);
-            slice_map.get(&remains).unwrap().push(&strs);
+            slice_map.get(&remains).unwrap().push(strs);
         }
         let mut sub_commitments:Vec<String> = Vec::with_capacity(n);
         let mut threads = vec![];
