@@ -373,20 +373,21 @@ impl<B: DB> State<B> {
         // let mut rng = ChaChaRng::from_seed(l);
         let mut values: Vec<String> = Vec::with_capacity(n);
         // let mut slice_values:Vec<Vec<String>> = vec![vec![String::new()]];
-        let mut slice_value_0:Vec<&str> = Vec::with_capacity(n);
-        let mut slice_value_1:Vec<&str> = Vec::with_capacity(n);
-        let mut slice_value_2:Vec<&str> = Vec::with_capacity(n);
-        let mut slice_value_3:Vec<&str> = Vec::with_capacity(n);
+        let mut slice_value_0:Vec<String> = vec![String::from(0)];
+        let mut slice_value_1:Vec<String> = vec![String::from(0)];
+        let mut slice_value_2:Vec<String> = vec![String::from(0)];
+        let mut slice_value_3:Vec<String> = vec![String::from(0)];
+       
         let mut slice_map = HashMap::new();
         for i in 0..3{
             if i ==0{
-                slice_map.insert(0,&slice_value_0);
+                slice_map.insert(0,&mut slice_value_0);
             }else if i ==1{
-                slice_map.insert(1,&slice_value_1);
+                slice_map.insert(1,&mut slice_value_1);
             }else if i ==2{
-                slice_map.insert(2,&slice_value_2);
+                slice_map.insert(2,&mut slice_value_2);
             }else {
-                slice_map.insert(3,&slice_value_3);
+                slice_map.insert(3,&mut slice_value_3);
             }
             
         }
@@ -397,9 +398,9 @@ impl<B: DB> State<B> {
             let remains =  k as usize;
             let strs = format!("{}{}",String::from_utf8_lossy(&key),String::from_utf8_lossy(&value));
             // values.push(strs);
-            slice_map.get(&remains).unwrap().push(&strs[..]);
+            slice_map.get_mut(&remains).unwrap().push(strs.clone());
         }
-        let mut sub_commitments:Vec<String> = Vec::with_capacity(n);
+        let mut sub_commitments:Vec<String> = vec![String::from(0)];
         let mut threads = vec![];
         for i in 0..(3){
             let sizes = (slice_map.get(&i).unwrap().len() as u32);
