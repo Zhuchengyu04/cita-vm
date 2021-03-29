@@ -373,10 +373,10 @@ impl<B: DB> State<B> {
         // let mut rng = ChaChaRng::from_seed(l);
         let mut values: Vec<String> = Vec::with_capacity(n);
         // let mut slice_values:Vec<Vec<String>> = vec![vec![String::new()]];
-        let mut slice_value_0:Vec<String> = vec![String::from(0)];
-        let mut slice_value_1:Vec<String> = vec![String::from(0)];
-        let mut slice_value_2:Vec<String> = vec![String::from(0)];
-        let mut slice_value_3:Vec<String> = vec![String::from(0)];
+        let mut slice_value_0:Vec<String> = vec![String::from("0")];
+        let mut slice_value_1:Vec<String> = vec![String::from("0")];
+        let mut slice_value_2:Vec<String> = vec![String::from("0")];
+        let mut slice_value_3:Vec<String> = vec![String::from("0")];
        
         let mut slice_map = HashMap::new();
         for i in 0..3{
@@ -400,7 +400,7 @@ impl<B: DB> State<B> {
             // values.push(strs);
             slice_map.get_mut(&remains).unwrap().push(strs.clone());
         }
-        let mut sub_commitments:Vec<String> = vec![String::from(0)];
+        let mut sub_commitments:Vec<String> = vec![String::from("0")];
         let mut threads = vec![];
         for i in 0..(3){
             let sizes = (slice_map.get(&i).unwrap().len() as u32);
