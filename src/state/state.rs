@@ -9,14 +9,14 @@ use hashbrown::hash_map::Entry;
 use hashbrown::{HashMap, HashSet};
 use log::debug;
 use rayon::prelude::{IntoParallelRefMutIterator, ParallelIterator};
-use serde::{Serialize, Serializer, Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json as ser;
 //use std::str::FromStr;
-extern crate pairing_plus as pairing;
-extern crate pointproofs;
 extern crate num_bigint;
 extern crate num_integer;
 extern crate num_traits;
+extern crate pairing_plus as pairing;
+extern crate pointproofs;
 extern crate rand;
 extern crate rand_chacha;
 
@@ -27,10 +27,10 @@ use crate::state::account_db::AccountDB;
 use crate::state::err::Error;
 use crate::state::object_entry::{ObjectStatus, StateObjectEntry};
 
-use pairing::serdes::SerDes;
-use pointproofs::pairings::*;
-use pointproofs::pairings::param::paramgen_from_seed;
 use num_bigint::RandPrime;
+use pairing::serdes::SerDes;
+use pointproofs::pairings::param::paramgen_from_seed;
+use pointproofs::pairings::*;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaChaRng;
 
@@ -47,9 +47,8 @@ pub struct State<B> {
     //add vc
     pub vc_commitment: H256,
 }
-pub fn create_vc_commitment(seed:&String, ciphersuite: u8, slice_num: u32, values:&   Vec<String>,  com: &mut String) {
-    let (mut prover_params, verifier_params) =
-    paramgen_from_seed(&seed, ciphersuite, slice_num as usize).unwrap();
+pub fn create_vc_commitment(seed: &String, ciphersuite: u8, slice_num: u32, values: &Vec<String>, com: &mut String) {
+    let (mut prover_params, verifier_params) = paramgen_from_seed(&seed, ciphersuite, slice_num as usize).unwrap();
     let state_commitment = Commitment::new(&prover_params, values).unwrap();
     let mut commitment_bytes: Vec<u8> = vec![];
     state_commitment.serialize(&mut commitment_bytes, true);
@@ -68,7 +67,7 @@ impl<B: DB> State<B> {
             root: From::from(&root[..]),
             cache: RefCell::new(HashMap::new()),
             checkpoints: RefCell::new(Vec::new()),
-            //add vc 
+            //add vc
             vc_commitment: H256::from(0),
         })
     }
@@ -88,8 +87,8 @@ impl<B: DB> State<B> {
             root,
             cache: RefCell::new(HashMap::new()),
             checkpoints: RefCell::new(Vec::new()),
-            //add vc 
-            vc_commitment:H256::from(0),
+            //add vc
+            vc_commitment: H256::from(0),
         })
     }
 
@@ -322,9 +321,9 @@ impl<B: DB> State<B> {
             }
         }
     }
-    
+
     /// Flush the data from cache to database.
-    pub fn commit(&mut self,block_number: u64) -> Result<(), Error> {
+    pub fn commit(&mut self, block_number: u64) -> Result<(), Error> {
         assert!(self.checkpoints.borrow().is_empty());
         // Firstly, update account storage tree
         let db = Arc::clone(&self.db);
@@ -363,58 +362,59 @@ impl<B: DB> State<B> {
                 }
             })
             .collect::<Vec<(Vec<u8>, Vec<u8>)>>();
-            //add vc
+        //add vc
         let kv_size = key_values.len();
-        
+
         let per_pos_size = 2;
         let l = block_number;
         let n = kv_size;
-        const slices_num :i32= 4;
+        const slices_num: i32 = 4;
         // let mut rng = ChaChaRng::from_seed(l);
         let mut values: Vec<String> = Vec::with_capacity(n);
         // let mut slice_values:Vec<Vec<String>> = vec![vec![String::new()]];
-        let mut slice_value_0:Vec<String> = vec![String::from("0")];
-        let mut slice_value_1:Vec<String> = vec![String::from("0")];
-        let mut slice_value_2:Vec<String> = vec![String::from("0")];
-        let mut slice_value_3:Vec<String> = vec![String::from("0")];
-       
+        let mut slice_value_0: Vec<String> = vec![String::from("0")];
+        let mut slice_value_1: Vec<String> = vec![String::from("0")];
+        let mut slice_value_2: Vec<String> = vec![String::from("0")];
+        let mut slice_value_3: Vec<String> = vec![String::from("0")];
+
         let mut slice_map = HashMap::new();
-        for i in 0..3{
-            if i ==0{
-                slice_map.insert(0,&mut slice_value_0);
-            }else if i ==1{
-                slice_map.insert(1,&mut slice_value_1);
-            }else if i ==2{
-                slice_map.insert(2,&mut slice_value_2);
-            }else {
-                slice_map.insert(3,&mut slice_value_3);
-            }
-            
-        }
+
+        slice_map.insert(0, &mut slice_value_0);
+        slice_map.insert(1, &mut slice_value_1);
+        slice_map.insert(2, &mut slice_value_2);
+        slice_map.insert(3, &mut slice_value_3);
+
         for (key, value) in key_values.into_iter() {
-            let mut k = *(key.get(key.len()-1).unwrap());
+            let mut k = *(key.get(key.len() - 1).unwrap());
             k &= 0b0000_0011;
-           
-            let remains =  k as usize;
-            let strs = format!("{}{}",String::from_utf8_lossy(&key),String::from_utf8_lossy(&value));
+
+            let remains = k as usize;
+            let strs = format!("{}{}", String::from_utf8_lossy(&key), String::from_utf8_lossy(&value));
             // values.push(strs);
             slice_map.get_mut(&remains).unwrap().push(strs.clone());
         }
-        let mut sub_commitments:Vec<String> = vec![String::from("0")];
+        let mut sub_commitments: Vec<String> = vec![String::from("0")];
         let mut threads = vec![];
-        for i in 0..(3){
+        for i in 0..(3) {
             let sizes = (slice_map.get(&i).unwrap().len() as u32);
-            let t = thread::spawn(move || { create_vc_commitment(&format!("123456789012345678901234567890{}-{}",l.to_string(),i.to_string()),0,sizes,& slice_map.get(&i).unwrap(), &mut sub_commitments[i.clone() as usize]) });
+            let t = thread::spawn(move || {
+                create_vc_commitment(
+                    &format!("123456789012345678901234567890{}-{}", l.to_string(), i.to_string()),
+                    0,
+                    sizes,
+                    &slice_map.get(&i).unwrap(),
+                    &mut sub_commitments[i.clone() as usize],
+                )
+            });
             threads.push(t);
         }
         let (mut all_prover_params, all_verifier_params) =
-        paramgen_from_seed(format!("123456789012345678901234567890{}",l.to_string()), 0, 4).unwrap();
+            paramgen_from_seed(format!("123456789012345678901234567890{}", l.to_string()), 0, 4).unwrap();
         all_prover_params.precomp_256();
         for t in threads {
             t.join().unwrap();
         }
         let state_commitment = Commitment::new(&all_prover_params, &(sub_commitments)).unwrap();
-
 
         self.root = H256::from(0);
         let mut commitment_bytes: Vec<u8> = vec![];
@@ -422,8 +422,6 @@ impl<B: DB> State<B> {
         self.vc_commitment = ser::from_str(&format!("{:?}", String::from_utf8(commitment_bytes))).unwrap();
         self.db.flush().or_else(|e| Err(Error::DB(format!("{}", e))))
     }
-
-    
 
     /// Create a recoverable checkpoint of this state. Return the checkpoint index.
     pub fn checkpoint(&mut self) -> usize {
@@ -1002,7 +1000,7 @@ mod tests {
 
         let ph = Rc::new(PrimeHash::init(64));
 
-        let config = Config { lambda, n,  ph };
+        let config = Config { lambda, n, ph };
         let mut vc = BinaryVectorCommitment::<Accumulator>::setup::<RSAGroup, _>(&mut rng, &config);
 
         let mut val: Vec<bool> = (0..64).map(|_| rng.gen()).collect();
@@ -1018,9 +1016,6 @@ mod tests {
 
         // open a set bit
         let comm = vc.open(&false, 3);
-        assert!(
-            vc.verify(&false, 3, &comm),
-            "invalid commitment (bit not set)"
-        );
+        assert!(vc.verify(&false, 3, &comm), "invalid commitment (bit not set)");
     }
 }
