@@ -396,15 +396,21 @@ impl<B: DB> State<B> {
         let mut sub_commitments: Vec<String> = vec![String::from("0")];
         let mut threads = vec![];
         for i in 0..(3) {
-            let sizes = (slice_map.get(&i).unwrap().clone().len() as u32);
+            let sizes = (slice_map.clone().get(&i).unwrap().len() as u32);
             let t = thread::spawn(move || {
-                create_vc_commitment(
-                    &format!("123456789012345678901234567890{}-{}", l.to_string(), i.to_string()),
-                    0,
-                    sizes,
-                    &slice_map.get(&i).unwrap(),
-                    &mut sub_commitments[i.clone() as usize],
-                )
+                // create_vc_commitment(
+                //     &format!("123456789012345678901234567890{}-{}", l.to_string(), i.to_string()),
+                //     0,
+                //     sizes,
+                //     &slice_map.clone().get(&i).unwrap(),
+                //     &mut sub_commitments[i.clone() as usize],
+                // )
+                let seed = format!("123456789012345678901234567890{}-{}", l.to_string(), i.to_string());
+                let (mut prover_params, verifier_params) = paramgen_from_seed(&seed, 0, sizes as usize).unwrap();
+                let state_commitment = Commitment::new(&prover_params, &slice_map.clone().get(&i).unwrap()).unwrap();
+                let mut commitment_bytes: Vec<u8> = vec![];
+                state_commitment.serialize(&mut commitment_bytes, true);
+                sub_commitments[i] = format!("{:?}", String::from_utf8(commitment_bytes));
             });
             threads.push(t);
         }
