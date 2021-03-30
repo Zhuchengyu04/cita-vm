@@ -436,7 +436,8 @@ impl<B: DB> State<B> {
         for t in threads {
             t.join().unwrap();
         }
-        let state_commitment = Commitment::new(&all_prover_params, &(sub_commitments)).unwrap();
+        let all_sub_commitment = format!("{}{}{}{}", sub_commitments_0,sub_commitments_1,sub_commitments_2,sub_commitments_3);
+        let state_commitment = Commitment::new(&all_prover_params, &(all_sub_commitment)).unwrap();
 
         self.root = H256::from(0);
         let mut commitment_bytes: Vec<u8> = vec![];
