@@ -393,7 +393,10 @@ impl<B: DB> State<B> {
             // values.push(strs);
             slice_map.get_mut(&remains).unwrap().push(strs.clone());
         }
-        let mut sub_commitments: Vec<String> = vec![String::from("0")];
+        let mut sub_commitments_0: String = String::new();
+        let mut sub_commitments_1: String= String::new();
+        let mut sub_commitments_2: String= String::new();
+        let mut sub_commitments_3: String= String::new();
         let mut threads = vec![];
         for i in 0..(3) {
             let sizes = (slice_map.clone().get(&i).unwrap().len() as u32);
@@ -410,7 +413,20 @@ impl<B: DB> State<B> {
                 let state_commitment = Commitment::new(&prover_params, &slice_map.clone().get(&i).unwrap()).unwrap();
                 let mut commitment_bytes: Vec<u8> = vec![];
                 state_commitment.serialize(&mut commitment_bytes, true);
-                sub_commitments[i] = format!("{:?}", String::from_utf8(commitment_bytes));
+                if i == 0{
+                    sub_commitments_0 = format!("{:?}", String::from_utf8(commitment_bytes));
+                }
+                if i == 1{
+                    sub_commitments_1 = format!("{:?}", String::from_utf8(commitment_bytes));
+                }
+                if i == 2{
+                    sub_commitments_2 = format!("{:?}", String::from_utf8(commitment_bytes));
+                }
+                if i == 3{
+                    sub_commitments_3 = format!("{:?}", String::from_utf8(commitment_bytes));
+                }   
+                
+                
             });
             threads.push(t);
         }
