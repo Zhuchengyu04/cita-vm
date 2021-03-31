@@ -433,7 +433,7 @@ impl<B: DB> State<B> {
         for received in rx {
             // println!("Got: {}", received);
             all_sub_commitment[received.0] = received.1;
-            println!(received.1);
+            println!("{}",received.1);
         }
 
         // format!("{}{}{}{}", sub_commitments_0,sub_commitments_1,sub_commitments_2,sub_commitments_3);
@@ -442,7 +442,7 @@ impl<B: DB> State<B> {
         self.root = H256::from(0);
         let mut commitment_bytes: Vec<u8> = vec![];
         assert!(state_commitment.serialize(&mut commitment_bytes, true).is_ok());
-        println!(format!("{:?}", String::from_utf8(commitment_bytes)));
+        println!("{}",format!("{:?}", String::from_utf8(commitment_bytes)));
         self.vc_commitment = ser::from_str(&format!("{:?}", String::from_utf8(commitment_bytes))).unwrap();
         self.db.flush().or_else(|e| Err(Error::DB(format!("{}", e))))
     }
