@@ -415,7 +415,7 @@ impl<B: DB> State<B> {
                 let state_commitment = Commitment::new(&prover_params, &sub_value).unwrap();
                 let mut commitment_bytes: Vec<u8> = vec![];
                 state_commitment.serialize(&mut commitment_bytes, true);
-                tx.send((i,commitment_bytes)).unwrap();
+                tx.send((i,format!("{:?}", String::from_utf8(commitment_bytes)))).unwrap();
                 
             });
             threads.push(t);
