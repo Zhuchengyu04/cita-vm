@@ -436,7 +436,7 @@ impl<B: DB> State<B> {
         for t in threads {
             t.join().unwrap();
         }
-        let all_sub_commitment:Vector<String> = Vec::with_capacity(4);
+        let all_sub_commitment:Vec<String> = Vec::with_capacity(4);
         all_sub_commitment.push(sub_commitments_0);
         all_sub_commitment.push(sub_commitments_1);
         all_sub_commitment.push(sub_commitments_2);
