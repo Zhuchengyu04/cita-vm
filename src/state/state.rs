@@ -443,7 +443,7 @@ impl<B: DB> State<B> {
         let mut commitment_bytes: Vec<u8> = vec![];
         assert!(state_commitment.serialize(&mut commitment_bytes, true).is_ok());
         let res = &commitment_bytes;
-        println!("all:{}",String::from_utf8(res));
+        println!("all:{:?}",String::from_utf8(res.to_vec()));
         self.vc_commitment = ser::from_str(&format!("{:?}", String::from_utf8(commitment_bytes))).unwrap();
         self.db.flush().or_else(|e| Err(Error::DB(format!("{}", e))))
     }
