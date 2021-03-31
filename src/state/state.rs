@@ -442,7 +442,8 @@ impl<B: DB> State<B> {
         self.root = H256::from(0);
         let mut commitment_bytes: Vec<u8> = vec![];
         assert!(state_commitment.serialize(&mut commitment_bytes, true).is_ok());
-        println!("{}",format!("{:?}", String::from_utf8(&commitment_bytes)));
+        let res = &commitment_bytes;
+        println!("all:{}",res);
         self.vc_commitment = ser::from_str(&format!("{:?}", String::from_utf8(commitment_bytes))).unwrap();
         self.db.flush().or_else(|e| Err(Error::DB(format!("{}", e))))
     }
