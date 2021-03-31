@@ -442,7 +442,7 @@ impl<B: DB> State<B> {
         all_sub_commitment.push(sub_commitments_2);
         all_sub_commitment.push(sub_commitments_3);
         // format!("{}{}{}{}", sub_commitments_0,sub_commitments_1,sub_commitments_2,sub_commitments_3);
-        let state_commitment = Commitment::new(&all_prover_params, &all_sub_commitment).unwrap();
+        let mut state_commitment = Commitment::new(&all_prover_params, &all_sub_commitment).unwrap();
 
         self.root = H256::from(0);
         let mut commitment_bytes: Vec<u8> = vec![];
