@@ -399,7 +399,7 @@ impl<B: DB> State<B> {
         let mut sub_commitments_3: String= String::new();
         let mut threads = vec![];
         for i in 0..(3) {
-            let sizes = (slice_map.clone().get(&i).unwrap().len() as u32);
+            let sizes = (&slice_map.clone().get(&i).unwrap().len() as u32);
             let t = thread::spawn(move || {
                 // create_vc_commitment(
                 //     &format!("123456789012345678901234567890{}-{}", l.to_string(), i.to_string()),
