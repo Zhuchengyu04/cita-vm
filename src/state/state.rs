@@ -409,8 +409,8 @@ impl<B: DB> State<B> {
         for i in 0..(3) {
             // let maps = slice_map.clone();
             let sizes = (slice_map.get(&i).unwrap().len() as u32);
-            let sub_value = slice_map.clone().get(&i).unwrap();
-            let sends = tx_vec[i];
+            let sub_value = &slice_map.get(&i).unwrap();
+            let sends = &tx_vec[i];
             let t = thread::spawn(move || {
                 // create_vc_commitment(
                 //     &format!("123456789012345678901234567890{}-{}", l.to_string(), i.to_string()),
