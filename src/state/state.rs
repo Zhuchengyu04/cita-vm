@@ -412,7 +412,7 @@ impl<B: DB> State<B> {
                 //     &slice_map.clone().get(&i).unwrap(),
                 //     &mut sub_commitments[i.clone() as usize],
                 // )
-                let seed = format!("123456789012345678901234567890{}-{}", l.to_string(), i.to_string());
+                let seed = format!("1234567890123456789012345678901{}-{}", l.to_string(), i.to_string());
                 let (mut prover_params, verifier_params) = paramgen_from_seed(&seed, 0, sizes as usize).unwrap();
                 let state_commitment = Commitment::new(&prover_params, &sub_value).unwrap();
                 let mut commitment_bytes: Vec<u8> = vec![];
@@ -423,7 +423,7 @@ impl<B: DB> State<B> {
             threads.push(t);
         }
         let (mut all_prover_params, all_verifier_params) =
-            paramgen_from_seed(format!("123456789012345678901234567890{}", l.to_string()), 0, 4).unwrap();
+            paramgen_from_seed(format!("1234567890123456789012345678901{}", l.to_string()), 0, 4).unwrap();
         all_prover_params.precomp_256();
         for t in threads {
             t.join().unwrap();
