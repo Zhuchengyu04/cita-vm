@@ -429,7 +429,7 @@ impl<B: DB> State<B> {
             t.join().unwrap();
         }
 
-        let mut all_sub_commitment:Vec<String> = vec!["0";4];
+        let mut all_sub_commitment:Vec<String> = vec!["0".to_string();4];
         for received in rx {
             // println!("Got: {}", received);
             all_sub_commitment[received.0] = received.1;
