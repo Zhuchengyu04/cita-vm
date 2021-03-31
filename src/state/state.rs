@@ -402,7 +402,7 @@ impl<B: DB> State<B> {
         for i in 0..(3) {
             // let maps = slice_map.clone();
             let sizes = (slice_map.get(&i).unwrap().len() as u32);
-            let sub_value = slice_map.get(&i).unwrap();
+            let sub_value = slice_map.get(&i).unwrap().clone();
             let sends = mpsc::Sender::clone(&tx);
             let t = thread::spawn(move || {
                 // create_vc_commitment(
