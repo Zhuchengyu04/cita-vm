@@ -414,7 +414,7 @@ impl<B: DB> State<B> {
                 // )
                 let seed = format!("123456789012345678901234567890{}-{}", l.to_string(), i.to_string());
                 let (mut prover_params, verifier_params) = paramgen_from_seed(&seed, 0, sizes as usize).unwrap();
-                let state_commitment = Commitment::new(&prover_params, sub_value).unwrap();
+                let state_commitment = Commitment::new(&prover_params, &sub_value).unwrap();
                 let mut commitment_bytes: Vec<u8> = vec![];
                 state_commitment.serialize(&mut commitment_bytes, true);
                 sends.send((i,format!("{:?}", String::from_utf8(commitment_bytes)))).unwrap();
