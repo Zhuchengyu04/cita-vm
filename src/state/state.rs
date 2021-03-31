@@ -396,21 +396,14 @@ impl<B: DB> State<B> {
         }
         let mut sub_commitments:Vec<String> = Vec::with_capacity(4);
         let (tx, rx) = mpsc::channel();
-        let tx1 = mpsc::Sender::clone(&tx);
-        let tx2 = mpsc::Sender::clone(&tx);
-        let tx3 = mpsc::Sender::clone(&tx);
-        let mut tx_vec =Vec::with_capacity(4);
-        tx_vec.push(tx);
-        tx_vec.push(tx1);
-        tx_vec.push(tx2);
-        tx_vec.push(tx3);
+
         let mut threads = vec![];
 
         for i in 0..(3) {
             // let maps = slice_map.clone();
             let sizes = (slice_map.get(&i).unwrap().len() as u32);
             let sub_value = &slice_map.get(&i).unwrap();
-            let sends = &tx_vec[i];
+            let sends = mpsc::Sender::clone(&tx);
             let t = thread::spawn(move || {
                 // create_vc_commitment(
                 //     &format!("123456789012345678901234567890{}-{}", l.to_string(), i.to_string()),
