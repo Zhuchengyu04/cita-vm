@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::sync::Arc;
 use std::thread;
+use std::sync::mpsc;
 
 use cita_trie::DB;
 use cita_trie::{PatriciaTrie, Trie};
@@ -393,14 +394,14 @@ impl<B: DB> State<B> {
             // values.push(strs);
             slice_map.get_mut(&remains).unwrap().push(strs.clone());
         }
-        let mut sub_commitments_0: String = String::new();
-        let mut sub_commitments_1: String= String::new();
-        let mut sub_commitments_2: String= String::new();
-        let mut sub_commitments_3: String= String::new();
+        let mut sub_commitments:Vec<String> = Vec::with_capacity(4);
+        let (tx, rx) = mpsc::channel();
         let mut threads = vec![];
+
         for i in 0..(3) {
-            let maps = slice_map.clone();
-            let sizes = (maps.get(&i).unwrap().len() as u32);
+            // let maps = slice_map.clone();
+            let sizes = (slice_map.get(&i).unwrap().len() as u32);
+            let sub_value = slice_map.get(&i).unwrap();
             let t = thread::spawn(move || {
                 // create_vc_commitment(
                 //     &format!("123456789012345678901234567890{}-{}", l.to_string(), i.to_string()),
@@ -411,22 +412,10 @@ impl<B: DB> State<B> {
                 // )
                 let seed = format!("123456789012345678901234567890{}-{}", l.to_string(), i.to_string());
                 let (mut prover_params, verifier_params) = paramgen_from_seed(&seed, 0, sizes as usize).unwrap();
-                let state_commitment = Commitment::new(&prover_params, &maps.get(&i).unwrap()).unwrap();
+                let state_commitment = Commitment::new(&prover_params, &sub_value).unwrap();
                 let mut commitment_bytes: Vec<u8> = vec![];
                 state_commitment.serialize(&mut commitment_bytes, true);
-                if i == 0{
-                    sub_commitments_0 = format!("{:?}", String::from_utf8(commitment_bytes));
-                }else
-                if i == 1{
-                    sub_commitments_1 = format!("{:?}", String::from_utf8(commitment_bytes));
-                }else
-                if i == 2{
-                    sub_commitments_2 = format!("{:?}", String::from_utf8(commitment_bytes));
-                }
-                else {
-                    sub_commitments_3 = format!("{:?}", String::from_utf8(commitment_bytes));
-                }   
-                
+                tx.send((i,commitment_bytes)).unwrap();
                 
             });
             threads.push(t);
@@ -437,11 +426,13 @@ impl<B: DB> State<B> {
         for t in threads {
             t.join().unwrap();
         }
+
         let mut all_sub_commitment:Vec<String> = Vec::with_capacity(4);
-        all_sub_commitment.push(sub_commitments_0);
-        all_sub_commitment.push(sub_commitments_1);
-        all_sub_commitment.push(sub_commitments_2);
-        all_sub_commitment.push(sub_commitments_3);
+        for received in rx {
+            // println!("Got: {}", received);
+            all_sub_commitment[received.0] = received.1;
+        }
+
         // format!("{}{}{}{}", sub_commitments_0,sub_commitments_1,sub_commitments_2,sub_commitments_3);
         let  state_commitment = Commitment::new(&all_prover_params, &all_sub_commitment).unwrap();
 
