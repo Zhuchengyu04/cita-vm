@@ -415,14 +415,14 @@ impl<B: DB> State<B> {
                 state_commitment.serialize(&mut commitment_bytes, true);
                 if i == 0{
                     sub_commitments_0 = format!("{:?}", String::from_utf8(commitment_bytes));
-                }
+                }else
                 if i == 1{
                     sub_commitments_1 = format!("{:?}", String::from_utf8(commitment_bytes));
-                }
+                }else
                 if i == 2{
                     sub_commitments_2 = format!("{:?}", String::from_utf8(commitment_bytes));
                 }
-                if i == 3{
+                else {
                     sub_commitments_3 = format!("{:?}", String::from_utf8(commitment_bytes));
                 }   
                 
