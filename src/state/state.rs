@@ -348,7 +348,7 @@ impl<B: DB> State<B> {
             .collect::<Result<(), Error>>()?;
 
         // Secondly, update the world state tree
-        // let mut trie = PatriciaTrie::from(Arc::clone(&self.db), Arc::new(hash::get_hasher()), &self.root.0)?;
+        let mut trie = PatriciaTrie::from(Arc::clone(&self.db), Arc::new(hash::get_hasher()), &self.root.0)?;
 
         let key_values = self
             .cache
@@ -391,6 +391,7 @@ impl<B: DB> State<B> {
 
             let remains = k as usize;
             let strs = format!("{}{}", String::from_utf8_lossy(&key), String::from_utf8_lossy(&value));
+            trie.insert(key.clone(), value.clone())?;
             // values.push(strs);
             slice_map.get_mut(&remains).unwrap().push(strs.clone());
         }
@@ -439,7 +440,7 @@ impl<B: DB> State<B> {
         // format!("{}{}{}{}", sub_commitments_0,sub_commitments_1,sub_commitments_2,sub_commitments_3);
         let  state_commitment = Commitment::new(&all_prover_params, &all_sub_commitment).unwrap();
 
-        self.root = H256::from(0);
+        self.root = From::from(&trie.root()?[..]);
         let mut commitment_bytes: Vec<u8> = vec![];
         assert!(state_commitment.serialize(&mut commitment_bytes, true).is_ok());
         let res = &commitment_bytes;
